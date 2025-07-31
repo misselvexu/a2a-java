@@ -136,7 +136,7 @@ public abstract class AbstractA2AServerTest {
     }
     
     private void testGetTask(String mediaType) throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         try {
             GetTaskResponse response = client.getTask("1", new TaskQueryParams(MINIMAL_TASK.getId()));
             assertEquals("1", response.getId());
@@ -147,13 +147,13 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during getTask: " + e.getMessage(), e);
         } finally {
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
     @Test
     public void testGetTaskNotFound() throws Exception {
-        assertTrue(getTaskStore().get("non-existent-task") == null);
+        assertTrue(getTaskFromTaskStore("non-existent-task") == null);
         try {
             GetTaskResponse response = client.getTask("1", new TaskQueryParams("non-existent-task"));
             assertEquals("1", response.getId());
@@ -167,7 +167,7 @@ public abstract class AbstractA2AServerTest {
     
     @Test
     public void testCancelTaskSuccess() throws Exception {
-        getTaskStore().save(CANCEL_TASK);
+        saveTaskInTaskStore(CANCEL_TASK);
         try {
             CancelTaskResponse response = client.cancelTask("1", new TaskIdParams(CANCEL_TASK.getId()));
             assertEquals("1", response.getId());
@@ -178,13 +178,13 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during cancel task success test: " + e.getMessage(), e);
         } finally {
-            getTaskStore().delete(CANCEL_TASK.getId());
+            deleteTaskInTaskStore(CANCEL_TASK.getId());
         }
     }
     
     @Test
     public void testCancelTaskNotSupported() throws Exception {
-        getTaskStore().save(CANCEL_TASK_NOT_SUPPORTED);
+        saveTaskInTaskStore(CANCEL_TASK_NOT_SUPPORTED);
         try {
             CancelTaskResponse response = client.cancelTask("1", new TaskIdParams(CANCEL_TASK_NOT_SUPPORTED.getId()));
             assertNull(response.getResult());
@@ -194,7 +194,7 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during cancel task not supported test: " + e.getMessage(), e);
         } finally {
-            getTaskStore().delete(CANCEL_TASK_NOT_SUPPORTED.getId());
+            deleteTaskInTaskStore(CANCEL_TASK_NOT_SUPPORTED.getId());
         }
     }
     
@@ -213,7 +213,7 @@ public abstract class AbstractA2AServerTest {
     
     @Test
     public void testSendMessageNewMessageSuccess() throws Exception {
-        assertTrue(getTaskStore().get(MINIMAL_TASK.getId()) == null);
+        assertTrue(getTaskFromTaskStore(MINIMAL_TASK.getId()) == null);
         Message message = new Message.Builder(MESSAGE)
                 .taskId(MINIMAL_TASK.getId())
                 .contextId(MINIMAL_TASK.getContextId())
@@ -237,7 +237,7 @@ public abstract class AbstractA2AServerTest {
     
     @Test
     public void testSendMessageExistingTaskSuccess() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         try {
             Message message = new Message.Builder(MESSAGE)
                     .taskId(MINIMAL_TASK.getId())
@@ -257,13 +257,13 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during send message to existing task test: " + e.getMessage(), e);
         } finally {
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
     @Test
     public void testSetPushNotificationSuccess() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         try {
             PushNotificationConfig pushNotificationConfig = new PushNotificationConfig.Builder()
                     .url("http://example.com")
@@ -278,13 +278,14 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during set push notification test: " + e.getMessage(), e);
         } finally {
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
     @Test
     public void testGetPushNotificationSuccess() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         try {
             PushNotificationConfig pushNotificationConfig = new PushNotificationConfig.Builder()
                     .url("http://example.com")
@@ -305,7 +306,7 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during get push notification test: " + e.getMessage(), e);
         } finally {
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
@@ -490,7 +491,7 @@ public abstract class AbstractA2AServerTest {
     
     @Test
     public void testSendMessageStreamExistingTaskSuccess() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         try {
             Message message = new Message.Builder(MESSAGE)
                     .taskId(MINIMAL_TASK.getId())
@@ -546,7 +547,7 @@ public abstract class AbstractA2AServerTest {
         } catch (Exception e) {
             fail("Unexpected exception during error handling test: " + e.getMessage(), e);
         } finally {
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
@@ -554,7 +555,7 @@ public abstract class AbstractA2AServerTest {
     @Timeout(value = 3, unit = TimeUnit.MINUTES)
     public void testResubscribeExistingTaskSuccess() throws Exception {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         
         try {
             // attempting to send a streaming message instead of explicitly calling queueManager#createOrTap
@@ -657,7 +658,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(TaskState.COMPLETED, taskStatusUpdateEvent.getStatus().state());
             assertNotNull(taskStatusUpdateEvent.getStatus().timestamp());
         } finally {
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
             executorService.shutdown();
             if (!executorService.awaitTermination(10, TimeUnit.SECONDS)) {
                 executorService.shutdownNow();
@@ -774,7 +775,7 @@ public abstract class AbstractA2AServerTest {
     
     @Test
     public void testListPushNotificationConfigWithConfigId() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1 =
                 new PushNotificationConfig.Builder()
                         .url("http://example.com")
@@ -799,13 +800,13 @@ public abstract class AbstractA2AServerTest {
         } finally {
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), "config1");
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), "config2");
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
     @Test
     public void testListPushNotificationConfigWithoutConfigId() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1 =
                 new PushNotificationConfig.Builder()
                         .url("http://1.example.com")
@@ -833,7 +834,7 @@ public abstract class AbstractA2AServerTest {
             fail();
         } finally {
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), MINIMAL_TASK.getId());
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
@@ -849,7 +850,7 @@ public abstract class AbstractA2AServerTest {
     
     @Test
     public void testListPushNotificationConfigEmptyList() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         try {
             ListTaskPushNotificationConfigResponse listResponse = client.listTaskPushNotificationConfig("111", MINIMAL_TASK.getId());
             assertEquals("111", listResponse.getId());
@@ -857,13 +858,13 @@ public abstract class AbstractA2AServerTest {
         } catch (Exception e) {
             fail();
         } finally {
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
     @Test
     public void testDeletePushNotificationConfigWithValidConfigId() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         saveTaskInTaskStore(new Task.Builder()
                 .id("task-456")
                 .contextId("session-xyz")
@@ -904,14 +905,14 @@ public abstract class AbstractA2AServerTest {
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), "config1");
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), "config2");
             deletePushNotificationConfigInStore("task-456", "config1");
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
             deleteTaskInTaskStore("task-456");
         }
     }
     
     @Test
     public void testDeletePushNotificationConfigWithNonExistingConfigId() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1 =
                 new PushNotificationConfig.Builder()
                         .url("http://example.com")
@@ -939,7 +940,7 @@ public abstract class AbstractA2AServerTest {
         } finally {
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), "config1");
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), "config2");
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
@@ -955,7 +956,7 @@ public abstract class AbstractA2AServerTest {
     
     @Test
     public void testDeletePushNotificationConfigSetWithoutConfigId() throws Exception {
-        getTaskStore().save(MINIMAL_TASK);
+        saveTaskInTaskStore(MINIMAL_TASK);
         PushNotificationConfig notificationConfig1 =
                 new PushNotificationConfig.Builder()
                         .url("http://1.example.com")
@@ -982,7 +983,7 @@ public abstract class AbstractA2AServerTest {
             fail();
         } finally {
             deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), MINIMAL_TASK.getId());
-            getTaskStore().delete(MINIMAL_TASK.getId());
+            deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
     }
     
@@ -1145,15 +1146,5 @@ public abstract class AbstractA2AServerTest {
         if (response.statusCode() != 200) {
             throw new RuntimeException(response.statusCode() + ": Creating task push notification config failed! " + response.body());
         }
-    }
-    
-    protected abstract TaskStore getTaskStore();
-    
-    protected abstract InMemoryQueueManager getQueueManager();
-    
-    protected abstract void setStreamingSubscribedRunnable(Runnable runnable);
-    
-    private static class BreakException extends RuntimeException {
-    
     }
 }
