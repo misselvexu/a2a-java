@@ -545,7 +545,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(Part.Kind.TEXT, part.getKind());
             assertEquals("test message", ((TextPart) part).getText());
         } catch (Exception e) {
-            fail("Unexpected exception during error handling test: " + e.getMessage(), e);
+            fail("Unexpected exception during send message stream to existing task test: " + e.getMessage(), e);
         } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
