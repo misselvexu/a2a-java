@@ -19,6 +19,13 @@ You can build the A2A Java SDK using `mvn`:
 mvn clean install
 ```
 
+### Regeneration of gRPC files
+We copy https://github.com/a2aproject/A2A/blob/main/specification/grpc/a2a.proto to the [`spec-grpc/`](./spec-grpc) project, and adjust the `java_package` option to be as follows:
+```
+option java_package = "io.a2a.grpc";
+```
+Then build the `spec-grpc` module with `mvn clean install -Pproto-compile` to regenerate the gRPC classes in the `io.a2a.grpc` package.
+
 ## Examples
 
 You can find an example of how to use the A2A Java SDK in the [a2a-samples repository](https://github.com/a2aproject/a2a-samples/tree/main/samples/multi_language/python_and_java_multiagent/weather_agent).
@@ -42,14 +49,27 @@ The A2A Java SDK provides a [reference A2A server implementation](reference-impl
 
 [Server Integrations](#server-integrations) contains a list of community contributed integrations of the server with various runtimes. You might be able to use one of these for your target runtime, or you can use them as inspiration to create your own.
 
-To use the reference implementation add the following dependency to your project:
+To use the reference implementation with the JSONRPC protocol add the following dependency to your project:
 
 > *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
 
 ```xml
 <dependency>
     <groupId>io.github.a2asdk</groupId>
-    <artifactId>a2a-java-reference-server</artifactId>
+    <artifactId>a2a-java-sdk-reference-jsonrpc</artifactId>
+    <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
+    <version>${io.a2a.sdk.version}</version>
+</dependency>
+```
+
+To use the reference implementation with the gRPC protocol add the following dependency to your project:
+
+> *⚠️ The `io.github.a2asdk` `groupId` below is temporary and will likely change for future releases.*
+
+```xml
+<dependency>
+    <groupId>io.github.a2asdk</groupId>
+    <artifactId>a2a-java-sdk-reference-grpc</artifactId>
     <!-- Use a released version from https://github.com/a2aproject/a2a-java/releases --> 
     <version>${io.a2a.sdk.version}</version>
 </dependency>
