@@ -9,25 +9,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.wildfly.common.Assert.assertNotNull;
 import static org.wildfly.common.Assert.assertTrue;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import io.a2a.server.events.InMemoryQueueManager;
-import io.a2a.server.tasks.TaskStore;
-import jakarta.ws.rs.core.MediaType;
-
 import io.a2a.client.A2AClient;
 import io.a2a.spec.A2AServerException;
 import io.a2a.spec.AgentCard;
@@ -62,7 +43,21 @@ import io.a2a.spec.TaskStatusUpdateEvent;
 import io.a2a.spec.TextPart;
 import io.a2a.spec.UnsupportedOperationError;
 import io.a2a.util.Utils;
-
+import jakarta.ws.rs.core.MediaType;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -72,7 +67,6 @@ import org.junit.jupiter.api.Timeout;
  * which delegates to {@link TestUtilsBean}.
  */
 public abstract class AbstractA2AServerTest {
-    
     private static final Task MINIMAL_TASK = new Task.Builder()
             .id("task-123")
             .contextId("session-xyz")
@@ -487,8 +481,6 @@ public abstract class AbstractA2AServerTest {
         testGetTask(MediaType.APPLICATION_JSON);
     }
     
-    
-    
     @Test
     public void testSendMessageStreamExistingTaskSuccess() throws Exception {
         saveTaskInTaskStore(MINIMAL_TASK);
@@ -583,12 +575,11 @@ public abstract class AbstractA2AServerTest {
                     // eventHandler
                     (streamingEvent) -> {
                         try {
-                            if (streamingEvent instanceof TaskArtifactUpdateEvent) {
-                                if (taskResubscriptionResponseReceived.getCount() == 2) {
-                                    firstResponse.set((TaskArtifactUpdateEvent) streamingEvent);
-                                } else {
-                                    secondResponse.set((TaskStatusUpdateEvent) streamingEvent);
-                                }
+                            if (streamingEvent instanceof TaskArtifactUpdateEvent artifactUpdateEvent) {
+                                firstResponse.set(artifactUpdateEvent);
+                                taskResubscriptionResponseReceived.countDown();
+                            } else if (streamingEvent instanceof TaskStatusUpdateEvent statusUpdateEvent) {
+                                secondResponse.set(statusUpdateEvent);
                                 taskResubscriptionResponseReceived.countDown();
                             }
                         } catch (Exception e) {
