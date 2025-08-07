@@ -167,7 +167,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals("1", response.getId());
             assertNull(response.getError());
             Task task = response.getResult();
-            assertEquals(CANCEL_TASK.getContextId(), task.getContextId());
+            assertEquals(CANCEL_TASK.getId(), task.getId());
             assertEquals(TaskState.CANCELED, task.getStatus().state());
         } catch (A2AServerException e) {
             fail("Unexpected exception during cancel task success test: " + e.getMessage(), e);
@@ -291,7 +291,7 @@ public abstract class AbstractA2AServerTest {
             assertNotNull(setResponse);
             
             // Then get the push notification config
-            GetTaskPushNotificationConfigResponse response = client.getTaskPushNotificationConfig("2", pushNotificationConfig.id());
+            GetTaskPushNotificationConfigResponse response = client.getTaskPushNotificationConfig("2", new GetTaskPushNotificationConfigParams(MINIMAL_TASK.getId()));
             assertEquals("2", response.getId());
             assertNull(response.getError());
             TaskPushNotificationConfig config = response.getResult();
@@ -300,7 +300,7 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during get push notification test: " + e.getMessage(), e);
         } finally {
-            deleteTaskInTaskStore(MINIMAL_TASK.getId());
+            deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), MINIMAL_TASK.getId());
         }
     }
     
@@ -537,7 +537,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals(Part.Kind.TEXT, part.getKind());
             assertEquals("test message", ((TextPart) part).getText());
         } catch (Exception e) {
-            fail("Unexpected exception during error handling test: " + e.getMessage(), e);
+            fail("Unexpected exception during send message stream to existing task test: " + e.getMessage(), e);
         } finally {
             deleteTaskInTaskStore(MINIMAL_TASK.getId());
         }
