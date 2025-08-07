@@ -276,16 +276,19 @@
     </build>
 
     <modules>
-        <module>sdk-server-common</module>
-        <module>common</module>
-        <module>grpc</module>
-        <module>spec</module>
         <module>client</module>
-        <module>reference-grpc</module>
-        <module>reference-impl</module>
-        <module>tck</module>
+        <module>common</module>
         <module>examples/helloworld</module>
+        <module>reference/common</module>
+        <module>reference/grpc</module>
+        <module>reference/jsonrpc</module>
+        <module>server-common</module>
+        <module>spec</module>
+        <module>spec-grpc</module>
+        <module>tck</module>
         <module>tests/server-common</module>
+        <module>transport/jsonrpc</module>
+        <module>transport/grpc</module>
     </modules>
 
     <profiles>
