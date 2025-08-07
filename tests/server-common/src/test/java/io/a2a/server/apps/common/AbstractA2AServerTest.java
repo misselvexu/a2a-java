@@ -297,7 +297,7 @@ public abstract class AbstractA2AServerTest {
             assertNotNull(setResponse);
             
             // Then get the push notification config
-            GetTaskPushNotificationConfigResponse response = client.getTaskPushNotificationConfig("2", pushNotificationConfig.id());
+            GetTaskPushNotificationConfigResponse response = client.getTaskPushNotificationConfig("2", new GetTaskPushNotificationConfigParams(MINIMAL_TASK.getId()));
             assertEquals("2", response.getId());
             assertNull(response.getError());
             TaskPushNotificationConfig config = response.getResult();
