@@ -173,7 +173,7 @@ public abstract class AbstractA2AServerTest {
             assertEquals("1", response.getId());
             assertNull(response.getError());
             Task task = response.getResult();
-            assertEquals(CANCEL_TASK.getContextId(), task.getContextId());
+            assertEquals(CANCEL_TASK.getId(), task.getId());
             assertEquals(TaskState.CANCELED, task.getStatus().state());
         } catch (A2AServerException e) {
             fail("Unexpected exception during cancel task success test: " + e.getMessage(), e);
