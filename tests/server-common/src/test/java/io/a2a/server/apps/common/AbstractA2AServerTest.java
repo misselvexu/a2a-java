@@ -306,7 +306,7 @@ public abstract class AbstractA2AServerTest {
         } catch (A2AServerException e) {
             fail("Unexpected exception during get push notification test: " + e.getMessage(), e);
         } finally {
-            deleteTaskInTaskStore(MINIMAL_TASK.getId());
+            deletePushNotificationConfigInStore(MINIMAL_TASK.getId(), MINIMAL_TASK.getId());
         }
     }
     
