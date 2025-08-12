@@ -153,13 +153,10 @@ public abstract class AbstractA2AServerTest {
     public void testGetTaskNotFound() throws Exception {
         assertTrue(getTaskFromTaskStore("non-existent-task") == null);
         try {
-            GetTaskResponse response = client.getTask("1", new TaskQueryParams("non-existent-task"));
-            assertEquals("1", response.getId());
-            assertInstanceOf(JSONRPCError.class, response.getError());
-            assertEquals(new TaskNotFoundError().getCode(), response.getError().getCode());
-            assertNull(response.getResult());
+            client.getTask("1", new TaskQueryParams("non-existent-task"));
+            fail("Expected A2AServerException to be thrown");
         } catch (A2AServerException e) {
-            fail("Unexpected exception during getTask for non-existent task: " + e.getMessage(), e);
+            assertInstanceOf(TaskNotFoundError.class, e.getCause());
         }
     }
     
@@ -184,13 +181,10 @@ public abstract class AbstractA2AServerTest {
     public void testCancelTaskNotSupported() throws Exception {
         saveTaskInTaskStore(CANCEL_TASK_NOT_SUPPORTED);
         try {
-            CancelTaskResponse response = client.cancelTask("1", new TaskIdParams(CANCEL_TASK_NOT_SUPPORTED.getId()));
-            assertNull(response.getResult());
-            assertEquals("1", response.getId());
-            assertInstanceOf(JSONRPCError.class, response.getError());
-            assertEquals(new UnsupportedOperationError().getCode(), response.getError().getCode());
+            client.cancelTask("1", new TaskIdParams(CANCEL_TASK_NOT_SUPPORTED.getId()));
+            fail("Expected A2AServerException to be thrown");
         } catch (A2AServerException e) {
-            fail("Unexpected exception during cancel task not supported test: " + e.getMessage(), e);
+            assertInstanceOf(UnsupportedOperationError.class, e.getCause());
         } finally {
             deleteTaskInTaskStore(CANCEL_TASK_NOT_SUPPORTED.getId());
         }
@@ -199,13 +193,10 @@ public abstract class AbstractA2AServerTest {
     @Test
     public void testCancelTaskNotFound() {
         try {
-            CancelTaskResponse response = client.cancelTask("1", new TaskIdParams("non-existent-task"));
-            assertEquals("1", response.getId());
-            assertNull(response.getResult());
-            assertInstanceOf(JSONRPCError.class, response.getError());
-            assertEquals(new TaskNotFoundError().getCode(), response.getError().getCode());
+            client.cancelTask("1", new TaskIdParams("non-existent-task"));
+            fail("Expected A2AServerException to be thrown");
         } catch (A2AServerException e) {
-            fail("Unexpected exception during cancel task not found test: " + e.getMessage(), e);
+            assertInstanceOf(TaskNotFoundError.class, e.getCause());
         }
     }
     
@@ -315,15 +306,12 @@ public abstract class AbstractA2AServerTest {
                 .contextId(SEND_MESSAGE_NOT_SUPPORTED.getContextId())
                 .build();
         MessageSendParams messageSendParams = new MessageSendParams(message, null, null);
-        
+
         try {
-            SendMessageResponse response = client.sendMessage("1", messageSendParams);
-            assertEquals("1", response.getId());
-            assertNull(response.getResult());
-            assertInstanceOf(JSONRPCError.class, response.getError());
-            assertEquals(new UnsupportedOperationError().getCode(), response.getError().getCode());
+            client.sendMessage("1", messageSendParams);
+            fail("Expected A2AServerException to be thrown");
         } catch (A2AServerException e) {
-            fail("Unexpected exception during error handling test: " + e.getMessage(), e);
+            assertInstanceOf(UnsupportedOperationError.class, e.getCause());
         }
     }
     
