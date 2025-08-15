@@ -56,13 +56,11 @@ public class A2ACardResolver {
                            Map<String, String> authHeaders) throws A2AClientError {
         this.httpClient = httpClient;
         agentCardPath = agentCardPath == null || agentCardPath.isEmpty() ? DEFAULT_AGENT_CARD_PATH : agentCardPath;
-        if (baseUrl.endsWith("/")) {
-            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        try {
+            this.url = new URI(baseUrl).resolve(agentCardPath).toString();
+        } catch (URISyntaxException e) {
+            throw new A2AClientError("Invalid agent URL", e);
         }
-        if (!agentCardPath.startsWith("/")) {
-            agentCardPath = "/" + agentCardPath;
-        }
-        this.url = baseUrl + agentCardPath;
         this.authHeaders = authHeaders;
     }
 
